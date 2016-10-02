@@ -30,14 +30,20 @@ angular.module('starter.controllers', [])
   $scope.estado = 'login';
 
   $scope.Logout = function() {
-      firebase.auth().signOut()
-      .then(function(exito){
-          console.info("Adios", exito);
-      }, function(error){
-          console.info("Error", error);
-      });
+    firebase.auth().signOut()
+    .then(function(){
+      //Estamos deslogueados
+      console.log("Adios");
+      //CurrentUser tiene los datos de la sesión. Si no hay sesión activa, muestra null.
+      console.info(firebase.auth().currentUser);
+      $timeout(function(){
+          $scope.estado = 'login';
+      }, 1000);
+    }, function(error){
+      //Error en deslogueo
+      console.log("Error");
+    });
   };
-
 
   $scope.doLogin = function() {
   
@@ -95,6 +101,5 @@ angular.module('starter.controllers', [])
         }
       }, 1000);
     });
-
   };
 });
