@@ -24,22 +24,77 @@ angular.module('starter.controllers', [])
 .controller('PlaylistCtrl', function($scope, $stateParams) {
 })
 
-.controller('LoginCtrl', function($scope, $timeout){
+.controller('LoginCtrl', function($scope, $timeout, $state){
   // Form data for the login modal
   $scope.loginData = {};
+  $scope.estado = 'login';
 
   $scope.Logout = function() {
-
+      firebase.auth().signOut()
+      .then(function(exito){
+          console.info("Adios", exito);
+      }, function(error){
+          console.info("Error", error);
+      });
   };
 
-  // Perform the login action when the user submits the login form
+
   $scope.doLogin = function() {
+  
+    //Le paso por código las credenciales así no tengo que tipearlas
+    //$scope.loginData.username= "ejemplo@adminfirebase.com";
+    //$scope.loginData.password= "12345678";
+    
     console.log('Doing login', $scope.loginData);
 
-    // Simulate a login delay. Remove this and replace with your login
-    // code if using a login system
-    $timeout(function() {
-      $scope.closeLogin();
-    }, 1000);
+    //Llamo a la función de Firebase que comprueba las credenciales por el método mail y password.
+    //Esta función va a recibir como parámetro el username y la contraseña.
+    //Si no son correctos los datos, llama a catch. Puede ser error de usuario o de contraseña.
+    //Los errores pueden ser: usuario no existente, contraseña inválida, mail con mal formato.
+    //Independientemente de lo que resulte, lama a then. Si fue correcto, en "respuesta" almaceno todos los datos. En respuesta.providerData tengo un array con la información del log.
+    firebase.auth().signInWithEmailAndPassword($scope.loginData.username, $scope.loginData.password)
+    .catch(function(error){
+        //NO SE PUDO LOGUEAR
+        //Muestro por consola
+        console.info(error);
+
+        //Muestro un alert con el tipo de error
+        switch(error.code){
+            case "auth/invalid-email":
+              alert("Mail con formato incorrecto");
+              break;
+            case "auth/user-not-found":
+              alert("El usuario ingresado no existe");
+              break;
+            case "auth/wrong-password":
+              alert("Contraseña incorrecta");
+              break;
+            default:
+              alert("Error");
+              break;
+        }
+    })
+    .then(function(respuesta){
+      //ACÁ ENTRA SIEMPRE
+      //Pongo todo el código en un timeout para evitar problemas de sincronización
+      $timeout(function(){
+        //Evalúo si respuesta está cargada con los datos de sesión
+        if(respuesta != undefined)
+        {
+          //SE LOGUEÓ
+          console.info("Bienvenido", respuesta);
+          //Podría redirigir a otro state
+          //$state.go("app.playlists");
+          //O también cambiar 'estado' para mostrar otra parte de código HTML en este mismo template
+          $scope.estado = 'logueado';
+        }
+        else
+        {
+          //NO SE LOGUEÓ
+          console.info("Error de ingreso", respuesta);
+        }
+      }, 1000);
+    });
+
   };
 });
