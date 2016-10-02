@@ -102,4 +102,14 @@ angular.module('starter.controllers', [])
       }, 1000);
     });
   };
+
+  $scope.ResetearClave = function(){
+      firebase.auth().sendPasswordResetEmail($scope.loginData.username)
+      .then(function(){
+          console.log("Revisar el correo");
+      }, function(error){
+          console.info(error);
+      });
+  };
+
 });
